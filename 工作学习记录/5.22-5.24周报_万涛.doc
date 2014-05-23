@@ -1,0 +1,97 @@
+周四
+学习记录
+　　1．新手引导梳理
+1.1引导步骤guide_step的类型由uint32改为string
+　　　Delimiter // or delimiter $$:将mysql的命令界定符由默认的；改为// 或$$;
+　　　例子：
+　　　mysql> delimiter // 
+　　　
+　　　mysql> CREATE PROCEDURE simpleproc (OUT param1 INT) 
+　　　-> BEGIN 
+　　　-> SELECT COUNT(*) INTO param1 FROM t; 
+　　　-> END; 
+　　　-> // 
+　　　Query OK, 0 rows affected (0.00 sec) 
+　　　
+　　　mysql> delimiter ; 
+
+1.2修改z_gamedb中的player_info中的字段的步骤：
+　　　若要更新
+　　　F:\wt\myWorkDir\code\server_release_branch\sql_update\1.0.0.0\z_gamedb\gamedb_0021.sql,
+　　　先查看tbl_version表中version_id，若version_id
+　　　为19，则用navicat for mysql 在 z_gamedb上运行
+　　　F:\wt\myWorkDir\code\server_release_branch\sql_update\1.0.0.0\z_gamedb\gamedb_0020.sql,
+　　　这时gamedb_0020.sql中的update_version会调用z_gamedb中的update_version函数，该	函数将
+　　　Tal_version中的version_id设置为20，然后再运行gamedb_0021.sql，即可跟新成功
+
+1.3服务端暂时只存储客户端发送过来的步骤，不对该步骤进行校验。
+
+　　2．成就相关
+　　　gs_chenjiu.xml
+　　　//成就数据
+　　　message ChenJiuData
+　　　{
+　　　  optional uint32 id=1; //成就ID
+　　　  optional uint32 value=2; //成就ID对应的当前值
+　　　  optional uint32 type=3; //0表示已完成还没领,1表示完成了并领取，2表示还未完成
+　　　}
+　　　
+　　　//成就种类
+　　　message ChenJiuKind
+　　　{
+　　　  optional uint32 kind=1; //成就种类
+　　　  repeated ChenJiuData data=2; //成就数据
+　　　}
+　　　
+　　　//得到成就(触发的)
+　　　message GetChenJiuReq
+　　　{
+　　　
+　　　}
+　　　
+　　　//得到成就(触发的)
+　　　message GetChenJiuAck
+　　　{
+　　　  repeated ChenJiuKind kind=1; //成就种类
+　　　}
+　　　
+　　　//更新一个触发成就
+　　　message UpdateChenJiu
+　　　{
+　　　  optional uint32 kind=1; //成就种类
+　　　  optional ChenJiuData data=2; //成就数据
+　　　}
+　　　
+　　　
+　　　//领取成就奖励
+　　　message GetChenJiuAwardReq
+　　　{
+　　　  optional  uint32  id=1; //成就id
+　　　}
+　　　
+　　　//领取成就奖励
+　　　message GetChenJiuAwardAck
+　　　{
+　　　  optional  int32  err_no=1; //领取结果 
+　　　  optional  uint32  id=2; //成就id
+　　　}
+　　　
+
+　　2．玩家第一次登陆调用on_player_enter_game.py里边的OnFirstEnterGame，给玩家一个初	始成就任务，给予能够升到2级的经验值，然后调用OnEnterGame，发送当前新手引导步	骤值，之后登陆则只调用OnEnterGame
+
+
+
+　　3．c_player_level表对应如下
+
+
+
+　　4．Gm命令获取玩家当前新手引导步骤
+　　　// getguidestep 12 解释：12为玩家ID
+　　　服务器返回
+　　　msg_=cur step =1-1
+
+　　5．Gm清除成就步骤
+　　　在 CGMMgr::Init()中写好注册处理函数
+　　　RegisterCmd("clear_chenjiu", e_Level5, &CGMMgr::GM_ClearChenjiu, "clear_chenjiu [playerid]");
+
+　　　// clear_chenjiu 12 12 解释：前一个12玩家Id，后一个12成就Id
